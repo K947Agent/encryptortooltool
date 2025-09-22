@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Access Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .login-section {
+            margin-bottom: 30px;
+        }
+
+        input[type="password"], input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(5px);
+        }
+
+        input[type="password"]::placeholder, input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ffa726);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .hint {
+            color: rgba(255, 255, 255, 0.8);
+            font-style: italic;
+            margin-top: 15px;
+        }
+
+        .error {
+            color: #ff4757;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* Encryptor/Decryptor Styles */
+        .crypto-container {
+            display: none;
+        }
+
+        .crypto-section {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .crypto-section h3 {
+            color: white;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(5px);
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Chat Styles */
+        .chat-container {
+            display: none;
+            height: 600px;
+        }
+
+        .chat-messages {
+            height: 450px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+
+        .system-message {
+            background: rgba(108, 92, 231, 0.3);
+        }
+
+        .message-time {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 5px;
+        }
+
+        .message-text {
+            color: white;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(5px);
+        }
+
+        .back-btn {
+            background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+            margin-bottom: 20px;
+        }
+
+        /* Online indicator */
+        .online-count {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loginScreen">
+            <h1>🔐 Secure Portal</h1>
+            <div class="login-section">
+                <input type="password" id="passwordInput" placeholder="Enter Password">
+                <button onclick="checkPassword()">Enter</button>
+                <div class="hint">Hint: Password is 369</div>
+                <div id="errorMessage" class="error"></div>
+            </div>
+        </div>
+
+        <div id="cryptoScreen" class="crypto-container">
+            <button class="back-btn" onclick="goBack()">← Back</button>
+            <h1>🔐 Text Encryptor/Decryptor</h1>
+            
+            <div class="crypto-section">
+                <h3>Encrypt Text</h3>
+                <textarea id="plainText" placeholder="Enter text to encrypt..."></textarea>
+                <button onclick="encryptText()">Encrypt</button>
+            </div>
+
+            <div class="crypto-section">
+                <h3>Decrypt Text</h3>
+                <textarea id="encryptedText" placeholder="Enter text to decrypt..."></textarea>
+                <button onclick="decryptText()">Decrypt</button>
+            </div>
+
+            <div class="crypto-section">
+                <h3>Result</h3>
+                <textarea id="resultText" placeholder="Result will appear here..." readonly></textarea>
+                <button onclick="copyResult()">Copy Result</button>
+            </div>
+        </div>
+
+        <div id="chatScreen" class="chat-container">
+            <button class="back-btn" onclick="goBack()">← Back</button>
+            <h1>💬 Global Chat</h1>
+            <div class="online-count" id="onlineCount">Connecting...</div>
+            
+            <div id="chatMessages" class="chat-messages"></div>
+            
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+
+    <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDNT7l1mg6AilumYFki_Ui7-HKPma5nBkc",
+            authDomain: "chat-5737d.firebaseapp.com",
+            databaseURL: "https://chat-5737d-default-rtdb.firebaseio.com",
+            projectId: "chat-5737d",
+            storageBucket: "chat-5737d.firebasestorage.app",
+            messagingSenderId: "867217735840",
+            appId: "1:867217735840:web:52b653aea88fe45a9549c5",
+            measurementId: "G-DBGG3RF9B3"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const analytics = firebase.analytics ? firebase.analytics(app) : null;
+        const database = firebase.database();
+        const messagesRef = database.ref('globalChat/messages');
+        const presenceRef = database.ref('globalChat/presence');
+
+        // Simple Caesar cipher for encryption/decryption
+        function caesarCipher(text, shift) {
+            return text.split('').map(char => {
+                if (char.match(/[a-z]/i)) {
+                    const code = char.charCodeAt(0);
+                    const base = code >= 65 && code <= 90 ? 65 : 97;
+                    return String.fromCharCode(((code - base + shift + 26) % 26) + base);
+                }
+                return char;
+            }).join('');
+        }
+
+        function checkPassword() {
+            const password = document.getElementById('passwordInput').value;
+            const errorDiv = document.getElementById('errorMessage');
+            
+            if (password === '369') {
+                showCryptoScreen();
+                errorDiv.textContent = '';
+            } else if (password === '2580') {
+                showChatScreen();
+                errorDiv.textContent = '';
+            } else {
+                errorDiv.textContent = 'Incorrect password!';
+            }
+            
+            document.getElementById('passwordInput').value = '';
+        }
+
+        function showCryptoScreen() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('cryptoScreen').style.display = 'block';
+            document.getElementById('chatScreen').style.display = 'none';
+        }
+
+        function showChatScreen() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('cryptoScreen').style.display = 'none';
+            document.getElementById('chatScreen').style.display = 'block';
+            
+            // Initialize Firebase chat
+            initFirebaseChat();
+        }
+
+        function goBack() {
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('cryptoScreen').style.display = 'none';
+            document.getElementById('chatScreen').style.display = 'none';
+            
+            // Clean up listeners
+            if (window.firebaseChatListener) {
+                messagesRef.off('value', window.firebaseChatListener);
+            }
+            if (window.firebasePresenceListener) {
+                presenceRef.off('value', window.firebasePresenceListener);
+            }
+            if (window.currentUserRef) {
+                window.currentUserRef.remove();
+            }
+        }
+
+        function encryptText() {
+            const plainText = document.getElementById('plainText').value;
+            if (plainText) {
+                const encrypted = btoa(caesarCipher(plainText, 5));
+                document.getElementById('resultText').value = encrypted;
+            }
+        }
+
+        function decryptText() {
+            const encryptedText = document.getElementById('encryptedText').value;
+            if (encryptedText) {
+                try {
+                    const decrypted = caesarCipher(atob(encryptedText), -5);
+                    document.getElementById('resultText').value = decrypted;
+                } catch (e) {
+                    document.getElementById('resultText').value = 'Invalid encrypted text!';
+                }
+            }
+        }
+
+        function copyResult() {
+            const resultText = document.getElementById('resultText');
+            resultText.select();
+            document.execCommand('copy');
+            alert('Result copied to clipboard!');
+        }
+
+        // Firebase Chat Functions
+        function initFirebaseChat() {
+            const messagesDiv = document.getElementById('chatMessages');
+            const onlineCountDiv = document.getElementById('onlineCount');
+            
+            // Display initial "Connecting..." message
+            onlineCountDiv.textContent = "Connecting...";
+            messagesDiv.innerHTML = '<div class="message system-message"><div class="message-time">' + new Date().toLocaleString() + '</div><div class="message-text">Connecting to global chat...</div></div>';
+            
+            // Generate a unique ID for this user
+            const userUUID = generateUUID();
+            window.currentUserRef = presenceRef.child(userUUID);
+            
+            // Set user as online
+            window.currentUserRef.set({
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                online: true
+            }).catch(error => {
+                console.error("Error setting user presence:", error);
+            });
+            
+            // Remove user when they leave
+            window.addEventListener('beforeunload', () => {
+                if (window.currentUserRef) {
+                    window.currentUserRef.remove().catch(error => {
+                        console.error("Error removing user presence:", error);
+                    });
+                }
+            });
+            
+            // Listen for presence changes
+            window.firebasePresenceListener = (snapshot) => {
+                const users = snapshot.val();
+                let count = 0;
+                if (users) {
+                    count = Object.keys(users).length;
+                }
+                onlineCountDiv.textContent = count + " user(s) online";
+            };
+            
+            presenceRef.on('value', window.firebasePresenceListener);
+            
+            // Load and listen for messages
+            window.firebaseChatListener = (snapshot) => {
+                const data = snapshot.val();
+                
+                if (!data) {
+                    messagesDiv.innerHTML = '<div class="message system-message"><div class="message-time">' + new Date().toLocaleString() + '</div><div class="message-text">Welcome to Global Chat! Start the conversation.</div></div>';
+                    return;
+                }
+                
+                // Convert object to array and sort by timestamp
+                const messages = [];
+                for (let key in data) {
+                    messages.push({
+                        id: key,
+                        ...data[key]
+                    });
+                }
+                
+                // Sort by timestamp
+                messages.sort((a, b) => a.timestamp - b.timestamp);
+                
+                // Render messages
+                messagesDiv.innerHTML = '';
+                messages.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message';
+                    if (msg.isSystem) {
+                        messageDiv.classList.add('system-message');
+                    }
+                    
+                    const time = new Date(msg.timestamp).toLocaleString();
+                    const timeDiv = document.createElement('div');
+                    timeDiv.className = 'message-time';
+                    timeDiv.textContent = time;
+                    
+                    const textDiv = document.createElement('div');
+                    textDiv.className = 'message-text';
+                    textDiv.textContent = msg.text;
+                    
+                    messageDiv.appendChild(timeDiv);
+                    messageDiv.appendChild(textDiv);
+                    messagesDiv.appendChild(messageDiv);
+                });
+                
+                // Auto scroll to bottom
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            };
+            
+            messagesRef.limitToLast(50).on('value', window.firebaseChatListener);
+            
+            // Add welcome message if this is the first user
+            messagesRef.once('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    messagesRef.push({
+                        text: "Welcome to the Global Chat! Messages are synchronized across all devices in real-time.",
+                        timestamp: firebase.database.ServerValue.TIMESTAMP,
+                        isSystem: true
+                    }).catch(error => {
+                        console.error("Error adding welcome message:", error);
+                    });
+                }
+            });
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const messageText = messageInput.value.trim();
+            
+            if (messageText) {
+                messagesRef.push({
+                    text: messageText,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    isSystem: false
+                }).then(() => {
+                    // Message sent successfully
+                    messageInput.value = '';
+                    messageInput.focus();
+                }).catch(error => {
+                    console.error("Error sending message:", error);
+                    alert("Failed to send message. Please try again.");
+                });
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Handle enter key on password input
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('passwordInput');
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        checkPassword();
+                    }
+                });
+            }
+        });
+
+        // Generate a simple UUID for presence tracking
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+    </script>
+</body>
+</html>
